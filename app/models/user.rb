@@ -35,6 +35,12 @@ class User < ActiveRecord::Base
     :dependent => :destroy
 
   before_create :ensure_authentication_token
+  before_validation(:on => :create) do
+    if self.password.empty?
+      self.password = Array.new(12) { (i = Kernel.rand(62); i += ((i < 10) ? 48 : ((i < 36) ? 55 : 61 ))).chr }.join
+      self.password_confirmation = self.password
+    end
+  end
   alias_attribute :private_token, :authentication_token
   scope :not_in_project, lambda { |project|  where("id not in (:ids)", :ids => project.users.map(&:id) ) }
 
